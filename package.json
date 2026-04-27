@@ -1,0 +1,21 @@
+{
+  "name": "proiect-2-panescul",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/HDR-2025-2026/proiect-2-panescul#readme",
+  "bugs": {
+    "url": "https://github.com/HDR-2025-2026/proiect-2-panescul/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HDR-2025-2026/proiect-2-panescul.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {}
+}
