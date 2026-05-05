@@ -1,0 +1,17 @@
+[
+  {
+    "intrebare": "Ce ingredient este cunoscut pentru hidratarea intensă a pielii?",
+    "variante": ["Acid Salicilic", "Acid Hialuronic", "Retinol", "Vitamina C"],
+    "corect": 1
+  },
+  {
+    "intrebare": "Care este rolul principal al unei loțiuni SPF?",
+    "variante": ["Curățare", "Exfoliere", "Protecție solară", "Colorarea pielii"],
+    "corect": 2
+  },
+  {
+    "intrebare": "Ce tip de ten beneficiază cel mai mult de pe urma produselor \"oil-free\"?",
+    "variante": ["Ten uscat", "Ten mixt", "Ten gras", "Ten sensibil"],
+    "corect": 2
+  }
+]

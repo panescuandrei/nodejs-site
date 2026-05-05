@@ -1,0 +1,93 @@
+/* public/style.css */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #fdf5f6; /* Un roz foarte pal */
+    color: #4a4a4a;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #d4a3a3; /* Roz prăfuit */
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+header h1 {
+    margin: 0;
+    font-weight: 300;
+    letter-spacing: 2px;
+}
+
+main {
+    max-width: 700px;
+    margin: 40px auto;
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+h2 {
+    color: #c28c8c;
+    border-bottom: 2px solid #f9ebeb;
+    padding-bottom: 10px;
+    margin-top: 0;
+}
+
+.question-block {
+    margin-bottom: 25px;
+}
+
+.question-block p {
+    font-weight: 600;
+    font-size: 1.1em;
+}
+
+.option-div {
+    margin-bottom: 8px;
+}
+
+button {
+    background-color: #d4a3a3;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+    margin-top: 20px;
+}
+
+button:hover {
+    background-color: #c28c8c;
+}
+
+.result-container {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.result-container p {
+    font-size: 1.2em;
+}
+
+.result-container a {
+    display: inline-block;
+    margin-top: 15px;
+    color: #c28c8c;
+    text-decoration: none;
+    font-weight: bold;
+    border: 1px solid #c28c8c;
+    padding: 10px 20px;
+    border-radius: 5px;
+}
+
+.result-container a:hover {
+    background-color: #c28c8c;
+    color: white;
+}
