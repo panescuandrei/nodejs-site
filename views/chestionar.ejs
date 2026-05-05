@@ -1,0 +1,19 @@
+<h2>Chestionar Preferințe Cosmetice</h2>
+
+<form action="/rezultat-chestionar" method="POST">
+
+    <% for(let i = 0; i < intrebari.length; i++) { %>
+        <div style="margin-bottom: 20px;">
+            <p><strong><%= i + 1 %>. <%= intrebari[i].intrebare %></strong></p>
+            
+            <% for(let j = 0; j < intrebari[i].variante.length; j++) { %>
+                <div>
+                    <input type="radio" id="q<%= i %>_v<%= j %>" name="q<%= i %>" value="<%= j %>" required>
+                    <label for="q<%= i %>_v<%= j %>"><%= intrebari[i].variante[j] %></label>
+                </div>
+            <% } %>
+        </div>
+    <% } %>
+
+    <button type="submit">Trimite</button>
+</form>
