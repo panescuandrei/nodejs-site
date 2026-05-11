@@ -1,5 +1,9 @@
 <h2>Autentificare</h2>
 
+<% if (eroare) { %>
+    <p style="color: red; font-weight: bold;"><%= eroare %></p>
+<% } %>
+
 <form action="/verificare-autentificare" method="POST">
     <div class="question-block">
         <label for="utilizator">Utilizator:</label>

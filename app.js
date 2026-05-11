@@ -10,7 +10,10 @@ app.set('view engine', 'ejs');
 // suport pentru layout-uri - implicit fișierul care reprezintă template-ul site-ului este views/layout.ejs
 app.use(expressLayouts);
 // directorul 'public' va conține toate resursele accesibile direct de către client (e.g., fișiere css, javascript, imagini)
-app.use(express.static('public'))
+app.use(express.static('public'));
+
+app.use(cookieParser());
+
 // corpul mesajului poate fi interpretat ca json; datele de la formular se găsesc în format json în req.body
 app.use(bodyParser.json());
 // utilizarea unui algoritm de deep parsing care suportă obiecte în obiecte
@@ -20,59 +23,26 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // proprietățile obiectului Response - res - https://expressjs.com/en/api.html#res
 
 app.get('/', (req, res) => {
-    res.render('index');
-});
-// la accesarea din browser adresei http://localhost:6789/chestionar se va apela funcția specificată
-
-app.get('/chestionar', (req, res) => {
-    fs.readFile('intrebari.json', 'utf8', (err, data) => {
-        if (err) {
-            console.error("Eroare la citirea fișierului:", err);
-            return res.status(500).send("A apărut o eroare internă.");
-        }
-        
-        const listaIntrebari = JSON.parse(data);
-        res.render('chestionar', { intrebari: listaIntrebari });
-    });
-});
-
-app.post('/rezultat-chestionar', (req, res) => {
-
-    fs.readFile('intrebari.json', 'utf8', (err, data) => {
-        if (err) {
-            console.error("Eroare la citirea fișierului:", err);
-            return res.status(500).send("A apărut o eroare internă.");
-        }
-
-        const listaIntrebari = JSON.parse(data);
-        let nrRaspunsuriCorecte = 0;
-
-        for (let i = 0; i < listaIntrebari.length; i++) {
-            let raspunsUtilizator = req.body['q' + i];
-            
-            if (raspunsUtilizator !== undefined && Number(raspunsUtilizator) === listaIntrebari[i].corect) {
-                nrRaspunsuriCorecte++;
-            }
-        }
-
-        res.render('rezultat-chestionar', {
-            scor: nrRaspunsuriCorecte,
-            total: listaIntrebari.length
-        });
-    });
+    let utilizatorLogat = req.cookies.utilizator;
+    res.render('index', { utilizator: utilizatorLogat }); 
 });
 
 app.get('/autentificare', (req, res) => {
-    res.render('autentificare');
+    let mesajEroare = req.cookies.mesajEroare;
+    res.render('autentificare', { eroare: mesajEroare }); // 
 });
 
-// Ruta pentru preluarea datelor din formularul de autentificare
 app.post('/verificare-autentificare', (req, res) => {
-    // Afișează la consolă conținutul mesajului (req.body)
-    console.log("Date primite de la formular:", req.body);
-    
-    // Trimitem un răspuns temporar pentru a nu bloca browser-ul
-    res.send('Verifică terminalul pentru a vedea req.body!');
+    const { utilizator, parola } = req.body;
+
+    if (utilizator === 'admin' && parola === 'admin') {
+        res.cookie('utilizator', utilizator);
+        res.clearCookie('mesajEroare'); 
+        res.redirect('/');
+    } else {
+        res.cookie('mesajEroare', 'Utilizator sau parolă greșită!!!');
+        res.redirect('/autentificare');
+    }
 });
 
 app.listen(port, () => console.log(`Serverul rulează la adresa http://localhost:${port}/`));
