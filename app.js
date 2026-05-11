@@ -1,4 +1,5 @@
 const express = require('express');
+const session = require('express-session');
 const expressLayouts = require('express-ejs-layouts');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -22,6 +23,17 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // proprietățile obiectului Request - req - https://expressjs.com/en/api.html#req
 // proprietățile obiectului Response - res - https://expressjs.com/en/api.html#res
 
+app.use(session({
+    secret: 'cheie-secreta-cosmetice',
+    resave: false,
+    saveUninitialized: false
+}));
+
+app.use((req, res, next) => {
+    res.locals.utilizatorSesiune = req.session.utilizator;
+    next();
+});
+
 app.get('/', (req, res) => {
     let utilizatorLogat = req.cookies.utilizator;
     res.render('index', { utilizator: utilizatorLogat }); 
@@ -32,17 +44,63 @@ app.get('/autentificare', (req, res) => {
     res.render('autentificare', { eroare: mesajEroare }); // 
 });
 
+app.get('/delogare', (req, res) => {
+    req.session.destroy();
+    res.redirect('/');
+});
+
 app.post('/verificare-autentificare', (req, res) => {
     const { utilizator, parola } = req.body;
 
-    if (utilizator === 'admin' && parola === 'admin') {
-        res.cookie('utilizator', utilizator);
-        res.clearCookie('mesajEroare'); 
+    const rawData = fs.readFileSync('utilizatori.json');
+    const utilizatori = JSON.parse(rawData);
+
+    
+    const userGasit = utilizatori.find(u => u.utilizator === utilizator && u.parola === parola);
+
+    if (userGasit) {
+        
+        const { parola: passwordProp, ...dateSesiune } = userGasit; 
+        
+        req.session.utilizator = dateSesiune; 
+        
         res.redirect('/');
     } else {
-        res.cookie('mesajEroare', 'Utilizator sau parolă greșită!!!');
+        res.cookie('eroare', 'Utilizator sau parolă greșite!');
         res.redirect('/autentificare');
     }
+});
+
+
+app.get('/chestionar', (req, res) => {
+    if (!req.session.utilizator) {
+        return res.redirect('/autentificare');
+    }
+
+    const rawData = fs.readFileSync('intrebari.json');
+    const intrebari = JSON.parse(rawData);
+    
+    res.render('chestionar', { intrebari: intrebari });
+});
+
+app.post('/rezultat-chestionar', (req, res) => {
+    const raspunsuriUtilizator = req.body;
+    const rawData = fs.readFileSync('intrebari.json');
+    const intrebari = JSON.parse(rawData);
+    
+    let scor = 0;
+
+    intrebari.forEach((intrebare, index) => {
+
+        if (raspunsuriUtilizator['q' + index] == intrebare.corect) {
+            scor++;
+        }
+    });
+
+    res.render('rezultat-chestionar', { 
+        scor: scor, 
+        total: intrebari.length 
+    });
 });
 
 app.listen(port, () => console.log(`Serverul rulează la adresa http://localhost:${port}/`));

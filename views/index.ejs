@@ -1,8 +1,10 @@
 <h2>Pagina Principală</h2>
 
 <div class="result-container">
-    <% if (utilizator) { %>
-        <p>Bine ai venit, <strong><%= utilizator %></strong>!</p> <% } else { %>
+    <% if (typeof utilizatorSesiune !== 'undefined' && utilizatorSesiune) { %>
+        <p>Bine ai venit, <strong><%= utilizatorSesiune.nume %></strong>! Ești gata să explorezi produsele noastre?</p>
+        <a href="/chestionar">Completează Chestionarul</a>
+    <% } else { %>
         <p>Nu ești autentificat.</p>
         <a href="/autentificare">Mergi la Autentificare</a>
     <% } %>
