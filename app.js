@@ -1,6 +1,7 @@
 const express = require('express');
 const expressLayouts = require('express-ejs-layouts');
-const bodyParser = require('body-parser')
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 const fs = require('fs');
 const app = express();
 const port = 6789;
@@ -18,7 +19,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // proprietățile obiectului Request - req - https://expressjs.com/en/api.html#req
 // proprietățile obiectului Response - res - https://expressjs.com/en/api.html#res
 
-app.get('/', (req, res) => res.send('Hello World'));
+app.get('/', (req, res) => {
+    res.render('index');
+});
 // la accesarea din browser adresei http://localhost:6789/chestionar se va apela funcția specificată
 
 app.get('/chestionar', (req, res) => {
@@ -57,6 +60,19 @@ app.post('/rezultat-chestionar', (req, res) => {
             total: listaIntrebari.length
         });
     });
+});
+
+app.get('/autentificare', (req, res) => {
+    res.render('autentificare');
+});
+
+// Ruta pentru preluarea datelor din formularul de autentificare
+app.post('/verificare-autentificare', (req, res) => {
+    // Afișează la consolă conținutul mesajului (req.body)
+    console.log("Date primite de la formular:", req.body);
+    
+    // Trimitem un răspuns temporar pentru a nu bloca browser-ul
+    res.send('Verifică terminalul pentru a vedea req.body!');
 });
 
 app.listen(port, () => console.log(`Serverul rulează la adresa http://localhost:${port}/`));
