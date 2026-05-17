@@ -10,5 +10,11 @@
     "parola": "test",
     "nume": "Ciurila",
     "prenume": "Maria"
+  },
+  {
+    "utilizator": "skyllist",
+    "parola": "test",
+    "nume": "Frandes",
+    "prenume": "Codrin"
   }
 ]

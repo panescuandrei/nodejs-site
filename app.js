@@ -4,6 +4,7 @@ const expressLayouts = require('express-ejs-layouts');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const fs = require('fs');
+const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const port = 6789;
 // directorul 'views' va conține fișierele .ejs (html + js executat la server)
@@ -100,6 +101,77 @@ app.post('/rezultat-chestionar', (req, res) => {
     res.render('rezultat-chestionar', { 
         scor: scor, 
         total: intrebari.length 
+    });
+});
+
+
+app.get('/creare-bd', (req, res) => {
+    
+    let db = new sqlite3.Database('./cumparaturi.db', (err) => {
+        if (err) {
+            console.error(err.message);
+            return res.status(500).send("Eroare la conectarea la BD.");
+        }
+    });
+
+    
+    const queryCreare = `
+        CREATE TABLE IF NOT EXISTS produse (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nume TEXT NOT NULL,
+            pret REAL NOT NULL,
+            categorie TEXT
+        )
+    `;
+
+    db.run(queryCreare, (err) => {
+        if (err) {
+            console.error("Eroare la crearea tabelei:", err.message);
+        } else {
+            console.log("Tabela 'produse' a fost creată sau exista deja.");
+        }
+        
+        db.close();
+        res.redirect('/');
+    });
+});
+
+app.get('/inserare-bd', (req, res) => {
+    let db = new sqlite3.Database('./cumparaturi.db', (err) => {
+        if (err) {
+            console.error(err.message);
+            return res.status(500).send("Eroare la conectarea la BD.");
+        }
+    });
+
+    const produseCosmetice = [
+        ['Fond de ten matifiant', 65.50, 'Machiaj'],
+        ['Cremă hidratantă de noapte', 45.00, 'Îngrijire ten'],
+        ['Mascara volum intens', 35.99, 'Machiaj'],
+        ['Ser cu Vitamina C', 80.00, 'Îngrijire ten']
+    ];
+
+    const queryInserare = `INSERT INTO produse (nume, pret, categorie) VALUES (?, ?, ?)`;
+
+    db.serialize(() => {
+        const stmt = db.prepare(queryInserare);
+        for (let produs of produseCosmetice) {
+            stmt.run(produs, (err) => {
+                if (err) {
+                    console.error("Eroare la inserare:", err.message);
+                }
+            });
+        }
+        stmt.finalize();
+    });
+
+    db.close((err) => {
+        if (err) {
+            console.error(err.message);
+        } else {
+            console.log("Produsele au fost inserate cu succes!");
+        }
+        res.redirect('/');
     });
 });
 
