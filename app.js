@@ -211,5 +211,43 @@ app.get('/inserare-bd', (req, res) => {
     });
 });
 
+app.get('/vizualizare-cos', (req, res) => {
+    if (!req.session.utilizator) {
+        return res.redirect('/autentificare');
+    }
+
+    const cos = req.session.cos || [];
+
+    if (cos.length === 0) {
+        return res.render('vizualizare-cos', { produseCos: [] });
+    }
+
+    let db = new sqlite3.Database('./cumparaturi.db', (err) => {
+        if (err) {
+            console.error(err.message);
+            return res.render('vizualizare-cos', { produseCos: [] });
+        }
+    });
+
+    const placeholders = cos.map(() => '?').join(',');
+    const query = `SELECT * FROM produse WHERE id IN (${placeholders})`;
+
+    db.all(query, cos, (err, rows) => {
+        if (err) {
+            console.error("Eroare la extragerea din coș:", err.message);
+            res.render('vizualizare-cos', { produseCos: [] });
+        } else {
+
+            const produseDeAfisat = cos.map(idCos => {
+                return rows.find(randBazaDate => randBazaDate.id.toString() === idCos.toString());
+            }).filter(p => p !== undefined); // filtrăm eventualele produse șterse
+
+            res.render('vizualizare-cos', { produseCos: produseDeAfisat });
+        }
+        db.close();
+    });
+});
+
+
 app.listen(port, () => console.log(`Serverul rulează la adresa http://localhost:${port}/`));
 

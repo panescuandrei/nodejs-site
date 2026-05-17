@@ -1,0 +1,29 @@
+<h2>Coșul tău de cumpărături</h2>
+
+<div class="result-container">
+    <% if (produseCos && produseCos.length > 0) { %>
+        <ul class="product-list">
+            <% let total = 0; %>
+            <% produseCos.forEach(function(produs) { %>
+                <% total += produs.pret; %>
+                <li class="product-item">
+                    <div class="product-info">
+                        <strong><%= produs.nume %></strong> <br>
+                        <span class="product-category"><%= produs.categorie %></span>
+                    </div>
+                    <div>
+                        <strong><%= produs.pret.toFixed(2) %> RON</strong>
+                    </div>
+                </li>
+            <% }); %>
+        </ul>
+        
+        <div class="cart-total">
+            Total de plată: <%= total.toFixed(2) %> RON
+        </div>
+    <% } else { %>
+        <p>Coșul tău este momentan gol.</p>
+    <% } %>
+    
+    <a href="/">Înapoi la magazin</a>
+</div>

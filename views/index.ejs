@@ -12,25 +12,26 @@
     <hr style="margin: 20px 0;">
     
     <div class="db-actions">
-        <a href="/creare-bd" style="padding: 10px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px; margin-right: 10px;">Creare BD</a>
-        <a href="/inserare-bd" style="padding: 10px; background-color: #008CBA; color: white; text-decoration: none; border-radius: 5px;">Încarcare BD</a>
+        <a href="/creare-bd" class="btn-creare">Creare BD</a>
+        <a href="/inserare-bd" class="btn-incarcare">Încarcare BD</a>
     </div>
 
 
     <h3>Produse Disponibile</h3>
     
     <% if (typeof produse !== 'undefined' && produse.length > 0) { %>
-        <ul style="list-style-type: none; padding: 0;">
+        <ul class="product-list">
             <% produse.forEach(function(produs) { %>
-                <li style="border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; border-radius: 5px; background: #f9f9f9;">
-                    <strong><%= produs.nume %></strong> - <%= produs.pret %> RON (<em><%= produs.categorie %></em>)
+                <li class="product-item">
+                    <div class="product-info">
+                        <strong><%= produs.nume %></strong> - <%= produs.pret %> RON <br>
+                        <span class="product-category"><%= produs.categorie %></span>
+                    </div>
                     
                     <% if (typeof utilizatorSesiune !== 'undefined' && utilizatorSesiune) { %>
-                        <form action="/adaugare-cos" method="POST" style="margin-top: 10px;">
+                        <form action="/adaugare-cos" method="POST" class="add-to-cart-form">
                             <input type="hidden" name="id" value="<%= produs.id %>">
-                            <button type="submit" style="background-color: #ff9800; color: white; padding: 5px 10px; border: none; border-radius: 3px; cursor: pointer;">
-                                Adaugă în coș
-                            </button>
+                            <button type="submit" class="btn-adaugare">Adaugă în coș</button>
                         </form>
                     <% } %>
                 </li>
