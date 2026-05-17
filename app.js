@@ -36,8 +36,24 @@ app.use((req, res, next) => {
 });
 
 app.get('/', (req, res) => {
-    let utilizatorLogat = req.cookies.utilizator;
-    res.render('index', { utilizator: utilizatorLogat }); 
+    let db = new sqlite3.Database('./cumparaturi.db', (err) => {
+        if (err) {
+            console.error(err.message);
+            return res.render('index', { produse: [] }); 
+        }
+    });
+
+    // Extragem toate produsele din baza de date
+    db.all("SELECT * FROM produse", [], (err, rows) => {
+        if (err) {
+            console.error("Eroare la citirea produselor:", err.message);
+            res.render('index', { produse: [] });
+        } else {
+            // Trimitem rândurile (produsele) către index.ejs
+            res.render('index', { produse: rows });
+        }
+        db.close();
+    });
 });
 
 app.get('/autentificare', (req, res) => {
@@ -102,6 +118,26 @@ app.post('/rezultat-chestionar', (req, res) => {
         scor: scor, 
         total: intrebari.length 
     });
+});
+
+app.post('/adaugare-cos', (req, res) => {
+    
+    if (!req.session.utilizator) {
+        return res.redirect('/autentificare');
+    }
+
+    const idProdus = req.body.id;
+
+    
+    if (!req.session.cos) {
+        req.session.cos = [];
+    }
+
+    req.session.cos.push(idProdus);
+
+    console.log("Coșul curent conține ID-urile:", req.session.cos); 
+
+    res.redirect('/');
 });
 
 

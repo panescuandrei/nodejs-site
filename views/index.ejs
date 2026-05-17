@@ -16,4 +16,32 @@
         <a href="/inserare-bd" style="padding: 10px; background-color: #008CBA; color: white; text-decoration: none; border-radius: 5px;">Încarcare BD</a>
     </div>
 
+
+    <h3>Produse Disponibile</h3>
+    
+    <% if (typeof produse !== 'undefined' && produse.length > 0) { %>
+        <ul style="list-style-type: none; padding: 0;">
+            <% produse.forEach(function(produs) { %>
+                <li style="border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; border-radius: 5px; background: #f9f9f9;">
+                    <strong><%= produs.nume %></strong> - <%= produs.pret %> RON (<em><%= produs.categorie %></em>)
+                    
+                    <% if (typeof utilizatorSesiune !== 'undefined' && utilizatorSesiune) { %>
+                        <form action="/adaugare-cos" method="POST" style="margin-top: 10px;">
+                            <input type="hidden" name="id" value="<%= produs.id %>">
+                            <button type="submit" style="background-color: #ff9800; color: white; padding: 5px 10px; border: none; border-radius: 3px; cursor: pointer;">
+                                Adaugă în coș
+                            </button>
+                        </form>
+                    <% } %>
+                </li>
+            <% }); %>
+        </ul>
+    <% } else { %>
+        <p>Nu există produse în baza de date. Apasă pe "Încarcare BD" pentru a le adăuga.</p>
+    <% } %>
+
+
+
+
+
 </div>
