@@ -11,6 +11,8 @@
     const { body, validationResult } = require('express-validator');
     const csrf = require('csurf');
 
+    const loginTracker = {};   
+    const scannerTracker = {};
 
     // directorul 'views' va conține fișierele .ejs (html + js executat la server)
     app.set('view engine', 'ejs');
@@ -42,6 +44,21 @@
     const csrfProtection = csrf({ cookie: false });
 
     app.use((req, res, next) => {
+    const ipClient = req.ip;
+    const acum = Date.now();
+
+    if (scannerTracker[ipClient] && scannerTracker[ipClient].blocatPanaLa && acum < scannerTracker[ipClient].blocatPanaLa) {
+        const timpRamas = Math.ceil((scannerTracker[ipClient].blocatPanaLa - acum) / 1000);
+        return res.status(403).send(`
+            <h2>403 Forbidden - Acces Interzis (Anti-DoS)</h2>
+            <p>IP-ul tău a fost blocat temporar pentru scanare abuzivă de resurse inexistente.</p>
+            <p>Încearcă din nou peste <strong>${timpRamas} secunde</strong>.</p>
+        `);
+    }
+    next();
+});
+
+    app.use((req, res, next) => {
         res.locals.utilizatorSesiune = req.session.utilizator;
         next();
     });
@@ -54,13 +71,12 @@
             }
         });
 
-        // Extragem toate produsele din baza de date
         db.all("SELECT * FROM produse", [], (err, rows) => {
             if (err) {
                 console.error("Eroare la citirea produselor:", err.message);
                 res.render('index', { produse: [] });
             } else {
-                // Trimitem rândurile (produsele) către index.ejs
+               
                 res.render('index', { produse: rows });
             }
             db.close();
@@ -78,44 +94,78 @@
     });
 
     app.post('/verificare-autentificare', 
-        body('utilizator').trim().escape(), 
-        body('parola').trim(),
-        async (req, res) => {
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                res.cookie('mesajEroare', 'Datele introduse conțin caractere invalide!');
+    body('utilizator').trim().escape(), 
+    body('parola').trim(),
+    async (req, res) => {
+        const { utilizator, parola } = req.body;
+        const ipClient = req.ip;
+        const trackerKey = `${ipClient}:${utilizator}`; 
+
+        
+        const LIMITA_INCERCARI = 3; 
+        const COOLDOWN_INITIAL = 15 * 60 * 1000; 
+
+       
+        if (!loginTracker[trackerKey]) {
+            loginTracker[trackerKey] = { incercari: 0, blocatPanaLa: null, cooldownCurent: COOLDOWN_INITIAL };
+        }
+
+        const dateTracker = loginTracker[trackerKey];
+        const acum = Date.now();
+
+        if (dateTracker.blocatPanaLa && acum < dateTracker.blocatPanaLa) {
+            const timpRamas = Math.ceil((dateTracker.blocatPanaLa - acum) / 1000);
+            res.cookie('mesajEroare', `Cont blocat temporar! Încearcă din nou peste ${timpRamas} secunde.`);
+            return res.redirect('/autentificare');
+        }
+
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            res.cookie('mesajEroare', 'Datele introduse conțin caractere invalide!');
+            return res.redirect('/autentificare');
+        }
+
+        try {
+            const rawData = fs.readFileSync('utilizatori.json');
+            const utilizatori = JSON.parse(rawData);
+            const userGasit = utilizatori.find(u => u.utilizator === utilizator);
+
+            if (userGasit && await bcrypt.compare(parola, userGasit.parola)) {
+                delete loginTracker[trackerKey];
+
+                const { parola: passwordProp, ...dateSesiune } = userGasit; 
+                req.session.utilizator = dateSesiune; 
+                res.clearCookie('mesajEroare');
+                return res.redirect('/');
+            } 
+            
+            
+            else {
+                dateTracker.incercari++;
+
+               
+                if (dateTracker.incercari >= LIMITA_INCERCARI) {
+                    dateTracker.blocatPanaLa = acum + dateTracker.cooldownCurent;
+                    
+                    
+                    const minuteBlocat = Math.ceil(dateTracker.cooldownCurent / 1000 / 60);
+                    dateTracker.cooldownCurent = dateTracker.cooldownCurent * 2; 
+                    dateTracker.incercari = 0; 
+
+                    res.cookie('mesajEroare', `Prea multe încercări! Acces interzis pentru ${minuteBlocat} minute.`);
+                } else {
+                    const ramase = LIMITA_INCERCARI - dateTracker.incercari;
+                    res.cookie('mesajEroare', `Utilizator sau parolă greșite! Mai ai ${ramase} încercări.`);
+                }
                 return res.redirect('/autentificare');
             }
-
-            const { utilizator, parola } = req.body;
-
-            try {
-                const rawData = fs.readFileSync('utilizatori.json');
-                const utilizatori = JSON.parse(rawData);
-
-                
-                const userGasit = utilizatori.find(u => u.utilizator === utilizator);
-
-                
-                if (userGasit && await bcrypt.compare(parola, userGasit.parola)) {
-                    const { parola: passwordProp, ...dateSesiune } = userGasit; 
-                    req.session.utilizator = dateSesiune; 
-                    
-                    console.log("Date sesiune salvate:", req.session.utilizator);
-
-                    res.clearCookie('mesajEroare');
-                    res.redirect('/');
-                } else {
-                    res.cookie('mesajEroare', 'Utilizator sau parolă greșite!');
-                    res.redirect('/autentificare');
-                }
-            } catch (error) {
-                console.error("Eroare la autentificare:", error);
-                res.cookie('mesajEroare', 'A apărut o eroare pe server.');
-                res.redirect('/autentificare');
-            }
+        } catch (error) {
+            console.error("Eroare la autentificare:", error);
+            res.cookie('mesajEroare', 'A apărut o eroare pe server.');
+            return res.redirect('/autentificare');
         }
-    );
+    }
+);
 
 
     app.get('/chestionar', (req, res) => {
@@ -319,6 +369,42 @@
         }
     );
 
+
+    app.use((req, res) => {
+    const ipClient = req.ip;
+    const acum = Date.now();
+
+    const FEREASTRA_TIMP = 60 * 1000;       
+    const PRAG_MAXIM_404 = 5;               
+    const TIMP_BLOCARE_GLOBAL = 15 * 60 * 1000; 
+
+    if (!scannerTracker[ipClient]) {
+        scannerTracker[ipClient] = { contor404: 0, resetTime: acum + FEREASTRA_TIMP, blocatPanaLa: null };
+    }
+
+    const dateScanner = scannerTracker[ipClient];
+
+    
+    if (acum > dateScanner.resetTime) {
+        dateScanner.contor404 = 0;
+        dateScanner.resetTime = acum + FEREASTRA_TIMP;
+    }
+
+    
+    dateScanner.contor404++;
+
+    if (dateScanner.contor404 > PRAG_MAXIM_404) {
+        dateScanner.blocatPanaLa = acum + TIMP_BLOCARE_GLOBAL;
+        console.warn(`IP BLOCAT GLOBAL pentru activitate de scanare/DoS.`);
+        return res.status(403).send("403 Forbidden - IP blocat automat din motive de securitate (Depășire prag erori 404).");
+    }
+
+    res.status(404).send(`
+        <h2>404 Not Found</h2>
+        <p>Ne pare rău, dar pagina/resursa solicitată nu există în magazinul nostru de cosmetice.</p>
+        <a href="/">Înapoi la magazin</a>
+    `);
+});
 
 
 
