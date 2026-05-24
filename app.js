@@ -7,6 +7,8 @@ const fs = require('fs');
 const sqlite3 = require('sqlite3').verbose();
 const app = express();
 const port = 6789;
+const bcrypt = require('bcrypt');
+const { body, validationResult } = require('express-validator');
 // directorul 'views' va conține fișierele .ejs (html + js executat la server)
 app.set('view engine', 'ejs');
 // suport pentru layout-uri - implicit fișierul care reprezintă template-ul site-ului este views/layout.ejs
@@ -66,27 +68,44 @@ app.get('/delogare', (req, res) => {
     res.redirect('/');
 });
 
-app.post('/verificare-autentificare', (req, res) => {
-    const { utilizator, parola } = req.body;
+app.post('/verificare-autentificare', 
+    body('utilizator').trim().escape(), 
+    body('parola').trim(),
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            res.cookie('mesajEroare', 'Datele introduse conțin caractere invalide!');
+            return res.redirect('/autentificare');
+        }
 
-    const rawData = fs.readFileSync('utilizatori.json');
-    const utilizatori = JSON.parse(rawData);
+        const { utilizator, parola } = req.body;
 
-    
-    const userGasit = utilizatori.find(u => u.utilizator === utilizator && u.parola === parola);
+        try {
+            const rawData = fs.readFileSync('utilizatori.json');
+            const utilizatori = JSON.parse(rawData);
 
-    if (userGasit) {
-        
-        const { parola: passwordProp, ...dateSesiune } = userGasit; 
-        
-        req.session.utilizator = dateSesiune; 
-        
-        res.redirect('/');
-    } else {
-        res.cookie('eroare', 'Utilizator sau parolă greșite!');
-        res.redirect('/autentificare');
+            
+            const userGasit = utilizatori.find(u => u.utilizator === utilizator);
+
+            
+            if (userGasit && await bcrypt.compare(parola, userGasit.parola)) {
+                const { parola: passwordProp, ...dateSesiune } = userGasit; 
+                req.session.utilizator = dateSesiune; 
+                
+                
+                res.clearCookie('mesajEroare');
+                res.redirect('/');
+            } else {
+                res.cookie('mesajEroare', 'Utilizator sau parolă greșite!');
+                res.redirect('/autentificare');
+            }
+        } catch (error) {
+            console.error("Eroare la autentificare:", error);
+            res.cookie('mesajEroare', 'A apărut o eroare pe server.');
+            res.redirect('/autentificare');
+        }
     }
-});
+);
 
 
 app.get('/chestionar', (req, res) => {

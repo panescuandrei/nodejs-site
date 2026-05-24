@@ -1,19 +1,19 @@
 [
   {
     "utilizator": "panescul",
-    "parola": "test",
+    "parola": "$2a$12$OOnQ3rct9E0fChSnUk8ZtOevkopGOIFYoa4PfuhyZGYZRoHkAUupe",
     "nume": "Panescu",
     "prenume": "Andrei"
   },
   {
     "utilizator": "MaryAdry6",
-    "parola": "test",
+    "parola": "$2a$12$OOnQ3rct9E0fChSnUk8ZtOevkopGOIFYoa4PfuhyZGYZRoHkAUupe",
     "nume": "Ciurila",
     "prenume": "Maria"
   },
   {
     "utilizator": "skyllist",
-    "parola": "test",
+    "parola": "$2a$12$OOnQ3rct9E0fChSnUk8ZtOevkopGOIFYoa4PfuhyZGYZRoHkAUupe",
     "nume": "Frandes",
     "prenume": "Codrin"
   }
