@@ -4,7 +4,16 @@
     "parola": "$2a$12$OOnQ3rct9E0fChSnUk8ZtOevkopGOIFYoa4PfuhyZGYZRoHkAUupe",
     "nume": "Panescu",
     "prenume": "Andrei",
-    "rol": "ADMIN"
+    "rol": "ADMIN",
+    "cos": [
+      "3",
+      "3",
+      "1",
+      "8",
+      "12",
+      "16",
+      "17"
+    ]
   },
   {
     "utilizator": "MaryAdry6",

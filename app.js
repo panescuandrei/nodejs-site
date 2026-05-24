@@ -135,6 +135,9 @@
 
                 const { parola: passwordProp, ...dateSesiune } = userGasit; 
                 req.session.utilizator = dateSesiune; 
+
+                req.session.cos = userGasit.cos || [];
+
                 res.clearCookie('mesajEroare');
                 return res.redirect('/');
             } 
@@ -200,24 +203,40 @@
     });
 
     app.post('/adaugare-cos', (req, res) => {
+    if (!req.session.utilizator) {
+        return res.redirect('/autentificare');
+    }
+
+    const idProdus = req.body.id;
+
+    if (!req.session.cos) {
+        req.session.cos = [];
+    }
+
+    
+    req.session.cos.push(idProdus);
+
+    
+    try {
+        const rawData = fs.readFileSync('utilizatori.json');
+        const utilizatori = JSON.parse(rawData);
         
-        if (!req.session.utilizator) {
-            return res.redirect('/autentificare');
-        }
-
-        const idProdus = req.body.id;
-
         
-        if (!req.session.cos) {
-            req.session.cos = [];
+        const indexUser = utilizatori.findIndex(u => u.utilizator === req.session.utilizator.utilizator);
+        
+        if (indexUser !== -1) {
+            utilizatori[indexUser].cos = req.session.cos; 
+            
+            
+            fs.writeFileSync('utilizatori.json', JSON.stringify(utilizatori, null, 2));
         }
+    } catch (error) {
+        console.error("Eroare la salvarea coșului în fișier:", error);
+    }
 
-        req.session.cos.push(idProdus);
-
-        console.log("Coșul curent conține ID-urile:", req.session.cos); 
-
-        res.redirect('/');
-    });
+    console.log(`Coșul utilizatorului ${req.session.utilizator.utilizator} conține:`, req.session.cos); 
+    res.redirect('/');
+});
 
 
     app.get('/creare-bd', (req, res) => {
