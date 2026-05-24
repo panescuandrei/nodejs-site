@@ -1,0 +1,31 @@
+<h2>Panou Administrator - Adăugare Produs</h2>
+
+<div class="result-container">
+    <% if (mesaj) { %>
+        <p style="color: blue; font-weight: bold;"><%= mesaj %></p>
+    <% } %>
+
+    <form action="/admin/adaugare-produs" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+        <div class="question-block">
+            <label for="nume">Nume Produs:</label>
+            <input type="text" id="nume" name="nume" required>
+        </div>
+
+        <div class="question-block">
+            <label for="pret">Preț (RON):</label>
+            <input type="number" step="1" id="pret" name="pret" required>
+        </div>
+
+        <div class="question-block">
+            <label for="categorie">Categorie:</label>
+            <input type="text" id="categorie" name="categorie" required>
+        </div>
+
+        <button type="submit" class="btn-creare" style="padding: 10px 20px; cursor: pointer;">Adaugă Produs</button>
+    </form>
+
+    <br>
+    <a href="/">Înapoi la Pagina Principală</a>
+</div>

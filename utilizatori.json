@@ -3,18 +3,21 @@
     "utilizator": "panescul",
     "parola": "$2a$12$OOnQ3rct9E0fChSnUk8ZtOevkopGOIFYoa4PfuhyZGYZRoHkAUupe",
     "nume": "Panescu",
-    "prenume": "Andrei"
+    "prenume": "Andrei",
+    "rol": "ADMIN"
   },
   {
     "utilizator": "MaryAdry6",
     "parola": "$2a$12$OOnQ3rct9E0fChSnUk8ZtOevkopGOIFYoa4PfuhyZGYZRoHkAUupe",
     "nume": "Ciurila",
-    "prenume": "Maria"
+    "prenume": "Maria",
+    "rol": "USER"
   },
   {
     "utilizator": "skyllist",
     "parola": "$2a$12$OOnQ3rct9E0fChSnUk8ZtOevkopGOIFYoa4PfuhyZGYZRoHkAUupe",
     "nume": "Frandes",
-    "prenume": "Codrin"
+    "prenume": "Codrin",
+    "rol": "USER"
   }
 ]
