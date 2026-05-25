@@ -1,7 +1,7 @@
 <h2>Autentificare</h2>
 
 <% if (eroare) { %>
-    <p style="color: red; font-weight: bold;"><%= eroare %></p>
+    <p id="mesaj-eroare" style="color: red; font-weight: bold;"><%= eroare %></p>
 <% } %>
 
 <form action="/verificare-autentificare" method="POST">
@@ -17,3 +17,32 @@
 
     <button type="submit">Autentificare</button>
 </form>
+
+<script>
+    const elementEroare = document.getElementById('mesaj-eroare');
+    
+    if (elementEroare) {
+        const textInitial = elementEroare.textContent;
+        
+        
+        const matchSecunde = textInitial.match(/\d+/);
+        
+        if (matchSecunde) {
+            let secundeRamase = parseInt(matchSecunde[0], 10);
+            
+            const bucatiText = textInitial.split(matchSecunde[0]);
+            
+            const cronometru = setInterval(() => {
+                secundeRamase--;
+                
+                if (secundeRamase <= 0) {
+                    clearInterval(cronometru);
+                    elementEroare.textContent = "Te poți autentifica din nou! Reîncarcă pagina.";
+                    elementEroare.style.color = "green";
+                } else {
+                    elementEroare.textContent = bucatiText[0] + secundeRamase + bucatiText[1];
+                }
+            }, 1000);
+        }
+    }
+</script>

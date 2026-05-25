@@ -85,8 +85,23 @@
 
     app.get('/autentificare', (req, res) => {
         let mesajEroare = req.cookies.mesajEroare;
-        res.render('autentificare', { eroare: mesajEroare }); // 
-    });
+        const ipClient = req.ip; 
+
+        // verificam ce stie serverul despre acest IP la momentul actual
+        const dateTracker = loginTracker[ipClient];
+        const acum = Date.now();
+        
+        // verificam daca omul chiar este blocat iN memoria serverului, nu doar in browser
+        const esteBlocatPeBune = dateTracker && dateTracker.blocatPanaLa && acum < dateTracker.blocatPanaLa;
+
+        // daca avem un mesaj de eroare in cookie dar serverul nu il mai considera blocat
+        if (mesajEroare && !esteBlocatPeBune) {
+            res.clearCookie('mesajEroare'); 
+            mesajEroare = null; 
+    }
+
+    res.render('autentificare', { eroare: mesajEroare });
+});
 
     app.get('/delogare', (req, res) => {
         req.session.destroy();
@@ -99,7 +114,7 @@
     async (req, res) => {
         const { utilizator, parola } = req.body;
         const ipClient = req.ip;
-        const trackerKey = `${ipClient}:${utilizator}`; 
+        const trackerKey = ipClient; 
 
         
         const LIMITA_INCERCARI = 3; 
@@ -115,7 +130,10 @@
 
         if (dateTracker.blocatPanaLa && acum < dateTracker.blocatPanaLa) {
             const timpRamas = Math.ceil((dateTracker.blocatPanaLa - acum) / 1000);
-            res.cookie('mesajEroare', `Cont blocat temporar! Încearcă din nou peste ${timpRamas} secunde.`);
+            res.cookie('mesajEroare', `Cont blocat temporar! Încearcă din nou peste ${timpRamas} secunde.`, { 
+                maxAge: timpRamas * 1000,
+                httpOnly: true 
+            });
             return res.redirect('/autentificare');
         }
 
@@ -151,11 +169,14 @@
                     dateTracker.blocatPanaLa = acum + dateTracker.cooldownCurent;
                     
                     
-                    const minuteBlocat = Math.ceil(dateTracker.cooldownCurent / 1000 / 60);
+                    const secundeBlocat = Math.ceil(dateTracker.cooldownCurent / 1000);
                     dateTracker.cooldownCurent = dateTracker.cooldownCurent * 2; 
                     dateTracker.incercari = 0; 
 
-                    res.cookie('mesajEroare', `Prea multe încercări! Acces interzis pentru ${minuteBlocat} minute.`);
+                    res.cookie('mesajEroare', `Cont blocat temporar! Încearcă din nou peste ${secundeBlocat} secunde.`, {
+                        maxAge: secundeBlocat * 1000,
+                        httpOnly: true
+                    });
                 } else {
                     const ramase = LIMITA_INCERCARI - dateTracker.incercari;
                     res.cookie('mesajEroare', `Utilizator sau parolă greșite! Mai ai ${ramase} încercări.`);
